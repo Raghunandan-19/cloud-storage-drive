@@ -9,6 +9,11 @@ router.get('/', (req, res) => {
     res.render('index');
 })
 
+// health endpoint for platform checks
+router.get('/healthz', (req, res) => {
+    res.status(200).send('ok')
+})
+
 router.get('/home', auth, async (req, res) => {
     const userId = String(req.user.userId)
     const { data, error } = await supabase.storage.from(SUPABASE_BUCKET).list(userId, {
