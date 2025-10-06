@@ -1,0 +1,139 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
+    <link
+    href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css"
+    rel="stylesheet"
+/>
+  </head>
+  <body>
+    <main class="p-4 bg-gray-100 dark:bg-gray-800 h-screen w-screen">
+        <div class="flex items-center justify-between mb-4">
+            <h1 class="text-white text-xl">Drive</h1>
+            <form action="/user/logout" method="post">
+                <button class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" type="submit">Logout</button>
+            </form>
+        </div>
+        <button 
+        onclick="showPopUp()"
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold
+        py-2 px-4 rounded"
+        >
+            upload file
+        </button>
+
+        <div class="popup hidden backdrop-blur fixed top-0 left-0 h-screen w-screen flex items-center justify-center">
+        
+        <form id="uploadForm" action="/user/upload-file" method="post" 
+        enctype="multipart/form-data"
+        >
+            <div class="flex items-center justify-center w-96">
+            <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                    <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                    </svg>
+                    <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+                </div>
+                <input id="dropzone-file" type="file" class="hidden" name="file" />
+            </label>
+        </div>
+        <div class="w-96 mt-3">
+            <div class="w-full bg-gray-600 rounded h-3 overflow-hidden">
+                <div id="progressBar" class="bg-blue-500 h-3" style="width:0%"></div>
+            </div>
+            <div class="text-right text-white text-sm mt-1"><span id="progressText">0%</span></div>
+        </div>
+        
+        <button class="bg-gray-600 hover:gray-700 rounded mt-4 px-2 py-2 text-white" type="submit">
+            Upload file
+        </button>
+        </form>
+
+        
+
+        <button 
+        class="absolute top-4 right-4 text-gray-500 dark:text-gray-400 text-xl"
+            onclick="hidePopup()"
+        >
+            <i class="ri-close-line"></i>
+        </button>
+    </div>
+
+    <% if (Array.isArray(files) && files.length) { %>
+        <section class="mt-8">
+            <h2 class="text-white text-xl mb-3">Your uploaded files</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <% files.forEach(function(file){ %>
+                    <div class="p-3 rounded bg-gray-700 text-white overflow-hidden flex items-center gap-2">
+                        <a class="flex-1 min-w-0 whitespace-nowrap overflow-hidden text-ellipsis hover:underline" title="<%= file.name %>" href="<%= file.url %>" target="_blank"><%= file.name %></a>
+                        <% if (file.name.match(/\.(png|jpg|jpeg|gif|webp|svg)$/i)) { %>
+                            <img src="<%= file.url %>" alt="preview" class="h-10 w-10 min-w-[2.5rem] object-cover rounded border border-gray-600" />
+                        <% } %>
+                        <a class="bg-blue-600 hover:bg-blue-700 text-white rounded px-2 py-1 text-sm" href="/user/download-file/<%= encodeURIComponent(file.name) %>">Download</a>
+                        <form action="/user/rename-file" method="post" class="flex items-center gap-1">
+                            <input type="hidden" name="filename" value="<%= file.name %>" />
+                            <input name="newFilename" type="text" placeholder="New name" class="w-32 bg-gray-600 border border-gray-500 text-white text-xs rounded px-1 py-0.5" required />
+                            <button class="bg-yellow-600 hover:bg-yellow-700 text-white rounded px-2 py-1 text-sm" type="submit">Rename</button>
+                        </form>
+                        <form action="/user/delete-file" method="post">
+                            <input type="hidden" name="filename" value="<%= file.name %>" />
+                            <button class="bg-red-600 hover:bg-red-700 text-white rounded px-2 py-1 text-sm" type="submit">Delete</button>
+                        </form>
+                    </div>
+                <% }); %>
+            </div>
+        </section>
+    <% } else { %>
+        <p class="mt-8 text-gray-300">No files uploaded yet.</p>
+    <% } %>
+
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+    <script>
+        function showPopUp() {
+            document.querySelector('.popup').style.display='flex'
+        }
+
+        function hidePopup() {
+            document.querySelector('.popup').style.display='none'
+        }
+
+        (function(){
+            var form = document.getElementById('uploadForm');
+            if (!form) return;
+            var progressBar = document.getElementById('progressBar');
+            var progressText = document.getElementById('progressText');
+            form.addEventListener('submit', function(e){
+                e.preventDefault();
+                var formData = new FormData(form);
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', form.action, true);
+                xhr.upload.onprogress = function(e){
+                    if (e.lengthComputable) {
+                        var percent = Math.round((e.loaded / e.total) * 100);
+                        progressBar.style.width = percent + '%';
+                        progressText.textContent = percent + '%';
+                    }
+                };
+                xhr.onload = function(){
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        window.location = '/home';
+                    } else {
+                        alert('Upload failed');
+                    }
+                };
+                xhr.onerror = function(){
+                    alert('Upload error');
+                };
+                xhr.send(formData);
+            });
+        })();
+    </script>
+  </body>
+</html>
