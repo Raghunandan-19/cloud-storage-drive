@@ -11,6 +11,8 @@ const cookieParser = require('cookie-parser');
 const indexRouter = require('./routes/index.routes')
 
 app.set("view engine", "ejs");
+// trust proxy so secure cookies work behind Railway/Render
+app.set('trust proxy', 1);
 
 app.use(cookieParser())
 app.use(express.json());

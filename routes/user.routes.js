@@ -92,7 +92,12 @@ router.post('/login',
             process.env.JWT_SECRET,
         )
 
-        res.cookie('token', token, { httpOnly: true })
+        const isProd = process.env.NODE_ENV === 'production'
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: isProd, // only over HTTPS in production
+            sameSite: isProd ? 'none' : 'lax'
+        })
         res.redirect('/home')
     }
 )
